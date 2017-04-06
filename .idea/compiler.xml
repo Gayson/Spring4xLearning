@@ -11,8 +11,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8">
-      <module name="Spring4xLearing" target="1.8" />
-      <module name="Spring4xLearning" target="1.5" />
+      <module name="Spring4xLearning" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

@@ -44,6 +44,7 @@
 
         <aop:aspect ref="adviceMethod">
             <aop:before method="beforeMethod" pointcut="execution(* com.gayson.domain.Car.get*(..))"/>
+            <aop:after-returning method="atferMethod" pointcut="execution(* com.gayson.domain.Car.get*(..))" returning="val"/>
         </aop:aspect>
     </aop:config>
 
