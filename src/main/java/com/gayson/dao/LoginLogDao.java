@@ -10,9 +10,8 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public class LoginLogDao {
-    private JdbcTemplate jdbcTemplate;
-
     private final static String INSERT_LOGIN_LOG_SQL="INSERT INTO t_login_log(user_id, ip, login_datetime) VALUE (?,?,?)";
+    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     public void setJdbcTemplate(JdbcTemplate template){
@@ -20,6 +19,6 @@ public class LoginLogDao {
     }
 
     public void insertLoginLog(LoginLog loginLog){
-        jdbcTemplate.update(INSERT_LOGIN_LOG_SQL,new Object[]{loginLog.getUserID(),loginLog.getIp(),loginLog.getLoginDate()});
+        jdbcTemplate.update(INSERT_LOGIN_LOG_SQL, loginLog.getUserID(), loginLog.getIp(), loginLog.getLoginDate());
     }
 }

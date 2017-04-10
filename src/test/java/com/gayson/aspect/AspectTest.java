@@ -13,8 +13,8 @@ import org.testng.annotations.Test;
  */
 @ContextConfiguration("classpath*:/spring-context.xml")
 public class AspectTest extends AbstractTransactionalTestNGSpringContextTests {
-    private Car car;
     final static Logger logger=LoggerFactory.getLogger(AspectTest.class);
+    private Car car;
 
     @Autowired
     public void setCar(Car car) {
@@ -24,5 +24,6 @@ public class AspectTest extends AbstractTransactionalTestNGSpringContextTests {
     @Test
     public void beforeAdviceTest(){
         logger.info(""+car.getMaxSpeed());
+        logger.warn("" + car.getBrand());
     }
 }

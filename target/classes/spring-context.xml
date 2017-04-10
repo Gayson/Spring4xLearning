@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns="http://www.springframework.org/schema/beans" xmlns:cache="http://www.springframework.org/schema/cache"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/aop
        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
        http://www.springframework.org/schema/tx
        http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
        http://www.springframework.org/schema/context
-       http://www.springframework.org/schema/context/spring-context.xsd">
+       http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
 
     <!-- config for DAO -->
     <context:property-placeholder location="classpath:/datasource.properties"/>
+    <context:property-placeholder location="classpath:/hibernate.properties"/>
     <import resource="classpath:/beans.xml"/>
     <context:component-scan base-package="com.gayson.dao"/>
 
@@ -25,14 +26,41 @@
           p:username="${jdbc.username}"
           p:password="${jdbc.password}"/>
 
+    <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler"
+          lazy-init="true"/>
+
+    <!-- JDBCTemplate config -->
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate"
           p:dataSource-ref="dataSource"/>
 
+    <bean id="fieldIncrementer" class="com.gayson.utils.MySQLFieldIncrementer"
+          p:incrementerName="t_tables_id"
+          p:columnName=""
+          p:cacheSize="10"
+          p:dataSource-ref="dataSource"/>
+
+
+    <!-- Hibernate config -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean"
+          p:dataSource-ref="dataSource"
+          >
+        <property name="packagesToScan" value="com.gayson.domain"/>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.temp.use_jdbc_metadata_defaults">false</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="hibernateTemplate" class="org.springframework.orm.hibernate5.HibernateTemplate"
+          p:sessionFactory-ref="sessionFactory"/>
+
+    <bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager"
+          p:sessionFactory-ref="sessionFactory"/>
     <!-- config for Service -->
     <context:component-scan base-package="com.gayson.service"/>
-
-    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
-          p:dataSource-ref="dataSource"/>
 
     <!-- aop config -->
     <bean id="adviceMethod" class="com.gayson.aspect.SimpleAspect"/>
@@ -44,7 +72,8 @@
 
         <aop:aspect ref="adviceMethod">
             <aop:before method="beforeMethod" pointcut="execution(* com.gayson.domain.Car.get*(..))"/>
-            <aop:after-returning method="atferMethod" pointcut="execution(* com.gayson.domain.Car.get*(..))" returning="val"/>
+            <aop:after-returning method="afterMethod" pointcut="execution(* com.gayson.domain.Car.get*(..))"
+                                 returning="val"/>
         </aop:aspect>
     </aop:config>
 
@@ -54,4 +83,20 @@
             <tx:method name="*"/>
         </tx:attributes>
     </tx:advice>
+
+
+
+    <!-- cache config -->
+    <cache:annotation-driven/>
+    <bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">
+        <property name="caches">
+            <set>
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="default"/>
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="users"/>
+            </set>
+        </property>
+    </bean>
+
 </beans>

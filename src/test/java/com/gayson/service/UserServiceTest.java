@@ -2,6 +2,7 @@ package com.gayson.service;
 
 import com.gayson.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.testng.annotations.Test;
@@ -12,8 +13,15 @@ import java.util.Date;
  * Created by jixunzhen on 2017/4/5.
  */
 @ContextConfiguration("classpath*:/spring-context.xml")
+@Rollback(false)
 public class UserServiceTest extends AbstractTransactionalTestNGSpringContextTests{
     private UserService userService;
+
+    private static void assertTrue(boolean b) {
+        if (b) {
+            System.out.println("**********TRUE***********");
+        } else System.out.println("**********FALSE**********");
+    }
 
     @Autowired
     public void setUserService(UserService userService) {
@@ -23,13 +31,20 @@ public class UserServiceTest extends AbstractTransactionalTestNGSpringContextTes
     @Test
     public void insertUser(){
         User user=new User();
-        user.setUserName("gayson");
+        user.setUserName("hello");
         user.setPassword("123456");
         user.setCredits(0);
         user.setLastIP("192.168.0.1");
         user.setLastVisit(new Date());
 
-        userService.insertUser(user);
+        userService.saveUser(user);
+    }
+
+    @Test
+    public void removeUser() {
+        User user = new User();
+        //user.setUserID(61);
+        userService.deleteUser(user);
     }
 
     @Test
@@ -54,10 +69,12 @@ public class UserServiceTest extends AbstractTransactionalTestNGSpringContextTes
         System.out.println(user.getCredits());
     }
 
-    private static void assertTrue(boolean b){
-        if(b){
-            System.out.println("**********TRUE***********");
-        }
-        else System.out.println("**********FALSE**********");
+    @Test
+    public void cacheTest() {
+        User user = userService.findByUserName("gayson", "123456");
+
+        user = userService.getUserById(user.getUserID());
+        user = userService.getUserById(user.getUserID());
+        System.out.println(user.getUserName());
     }
 }
